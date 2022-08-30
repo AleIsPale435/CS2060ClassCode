@@ -17,6 +17,8 @@ int main( void )
 
    area = length * width;
    printf("Length: %d\tWidth: %d\tArea: %d", length, width, area);
+
+
 } // end function main 
 
 
