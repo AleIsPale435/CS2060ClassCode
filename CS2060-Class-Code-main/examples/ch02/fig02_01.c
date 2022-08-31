@@ -8,6 +8,7 @@ int main( void )
 	int length;
 	int width;
 	int area;
+	
 
 	puts("Enter the length: ");
    scanf("%d", &length);
@@ -16,7 +17,10 @@ int main( void )
    scanf("%d", &width);
 
    area = length * width;
-   printf("Length: %d\tWidth: %d\tArea: %d", length, width, area);
+   printf("Length: %d\tWidth: %d\tArea: %d\n", length, width, area);
+
+   int divisionResult = length / width;
+   printf("Length / Width: %d", divisionResult);
 
 
 } // end function main 
