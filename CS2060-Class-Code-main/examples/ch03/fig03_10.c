@@ -20,13 +20,17 @@ int main( void )
 
       // if result 1, increment passes 
       if ( result == 1 ) {     
-         passes = passes + 1;
+          passes++;
+         student++;
       } // end if 
-      else { // otherwise, increment failures 
-         failures = failures + 1;
-      } // end else 
+      else if (result == 2) { // otherwise, increment failures 
+         failures++;
+         student++;
+      }  
+      else {
+          puts("Incorrect value try again!");
+      }
 
-      student = student + 1; // increment student counter  
    } // end while 
 
    // termination phase; display number of passes and failures 
