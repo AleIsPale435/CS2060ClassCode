@@ -2,6 +2,7 @@
 // Counting letter grades with switch
 #include <stdio.h>
 
+
 int main(void)
 {
    unsigned int aCount = 0; 
@@ -12,7 +13,7 @@ int main(void)
 
    puts("Enter the letter grades." );
    puts("Enter the EOF character to end input." );
-   int grade; // one grade 
+   int grade = 0; // one grade 
 
    // loop until user types end-of-file key sequence
    while ((grade = getchar()) != EOF) {
