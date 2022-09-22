@@ -35,22 +35,21 @@ int main(void) {
 	// end program button is entered, it will skip the while loop and end the program
 	do {
 		hours = getValidHours();
-		
+
 		// Once negative 1 is entered, it exits the loop
 		if (hours == END_PROGRAM) {
 			isValid = false;
 		}
 
 		else {
-
 			// the calculate price method is called along with the variables being added up to show the total 
 			price = calculatePrice(hours);
 			totalPrice += price;
 			totalHours += hours;
 			totalBoards++;
-			printCurrentBoardInfo(totalHours, totalPrice, totalBoards);
+			printCurrentBoardInfo(hours, price, totalBoards);
 		}
-	} 
+	}
 	// After -1 is entered, it will print the total out for the boards entered previously
 	while (isValid);
 	printTotalSummary(totalPrice, totalHours, totalBoards);
@@ -98,8 +97,6 @@ double getValidHours() {
 
 
 	}
-
-
 	return hours;
 
 }
@@ -113,15 +110,15 @@ double calculatePrice(double hours) {
 	double price = 0;
 
 	if (hours > MIN_HOUR_CHARGE) {
-		price += (CHARGE_OVER_TWO_HOURS * hours) + MIN_CHARGE_FEE;
+		hours = hours - MIN_HOUR_CHARGE;
+		price += (hours * CHARGE_OVER_TWO_HOURS) + MIN_CHARGE_FEE;
 
 	}
-
 	else if (hours > MIN_HOURS && hours <= MIN_HOUR_CHARGE) {
 		price += MIN_CHARGE_FEE;
 	}
 
-	if (price > MAX_CHARGE) {
+	if (price >= MAX_CHARGE) {
 		price = MAX_CHARGE;
 	}
 
