@@ -140,16 +140,16 @@ void printTotalGrades(double finalGrades[]) {
 	// Header and checks each final grade value to determine which letter grade the student will get
 	puts("\n\nFinal grades: \n");
 	for (size_t i = 0; i < STUDENTS; i++) {
-		if (finalGrades[i] <= MAX_GRADE && finalGrades[i] >= 90) {
+		if (finalGrades[i] >= 90) {
 			letterGrade = 'A';
 		}
-		else if (finalGrades[i] <= 89 && finalGrades[i] >= 80) {
+		else if (finalGrades[i] < 90 && finalGrades[i] >= 80) {
 			letterGrade = 'B';
 		}
-		else if (finalGrades[i] <= 79 && finalGrades[i] >= 70) {
+		else if (finalGrades[i] < 80 && finalGrades[i] >= 70) {
 			letterGrade = 'C';
 		}
-		else if (finalGrades[i] <= 69 && finalGrades[i] >= 60){
+		else if (finalGrades[i] < 70 && finalGrades[i] >= 60){
 			letterGrade = 'D';
 		}
 		else {
