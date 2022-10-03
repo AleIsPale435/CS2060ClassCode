@@ -111,7 +111,7 @@ void calculateGrade(double grades[][GRADE_CATEGORIES], size_t students, size_t g
 /// This function will go through each element of the array multiply by the appropriate 
 /// weight scale and then add it up to get the final grade of the student
 /// </summary>
-void calculateFinalGrade(double grades[][GRADE_CATEGORIES],double finalGrade[], size_t students, size_t gradeCats) {
+void calculateFinalGrade(double const grades[][GRADE_CATEGORIES],double finalGrade[], size_t students, size_t gradeCats) {
 	
 	// For loop to go through each element, add it to total sum, then reset the counter
 	// after each row is done then calculate the final grade for the student and put it 
@@ -130,8 +130,7 @@ void calculateFinalGrade(double grades[][GRADE_CATEGORIES],double finalGrade[], 
 /// This method takes in the final grades array and displays the final grades for each student
 /// including the class average
 /// </summary>
-/// <param name="finalGrades"></param>
-void printTotalGrades(double finalGrades[]) {
+void printTotalGrades(double const finalGrades[]) {
 
 	// Two variables made
 	char letterGrade = ' ';
