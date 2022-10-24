@@ -18,8 +18,8 @@ const double GRADE_CATEGORY_WEIGHT[] = { .1, .3, .3, .15, .15 };
 void displayHeader();
 double getInput();
 void calculateGrade(double grades[][GRADE_CATEGORIES], size_t students, size_t gradeCats);
-void calculateFinalGrade(double grades[][GRADE_CATEGORIES], double finalGrade[], size_t students, size_t gradeCats);
-void printTotalGrades(double finalGrades[]);
+void calculateFinalGrade(double const grades[][GRADE_CATEGORIES], double finalGrade[], size_t students, size_t gradeCats);
+void printTotalGrades(double const finalGrades[]);
 
 
 int main(void) {

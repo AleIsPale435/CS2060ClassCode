@@ -9,7 +9,7 @@
 
 #define LENGTH 13
 
-void  exploreValidateInt(const char* buff);
+bool exploreValidateInt(const char* buff);
 bool validateInt(char* buff, int* const validInt);
 void printLimits();
 
@@ -59,29 +59,34 @@ void printLimits()
 }
 
 
-void  exploreValidateInt(const char* buff)
+bool  exploreValidateInt(const char* buff)
 {
 	char* end;
 	errno = 0;
 	int validInt = 0;
+	bool state = true;
 	long intTest = strtol(buff, &end, 10);
+
 	if (end == buff) {
 		fprintf(stderr, "%s: not a decimal number\n", buff);
+		fprintf(stderr, "%ld is not valid\n", intTest);
+		state = false;
 	}
-	else if ('\0' != *end) {
+	else if ('\0' != *end && '\n' != *end) {
 		fprintf(stderr, "%s: extra characters at end of input: %s\n", buff, end);
+		fprintf(stderr, "%ld is valid\n", intTest);
 	}
-	else if ((LONG_MIN == intTest || LONG_MAX == intTest) && ERANGE == errno) {
-		fprintf(stderr, "%s out of range of type long\n", buff);
-	}
-	else if (intTest > INT_MAX) {
-		fprintf(stderr, "%ld greater than INT_MAX\n", intTest);
-	}
-	else if (intTest < INT_MIN) {
-		fprintf(stderr, "%ld less than INT_MIN\n", intTest);
+	else if (intTest > INT_MAX || intTest < INT_MIN) {
+		fprintf(stderr, "%ld not in range\n", intTest);
+		fprintf(stderr, "%ld is not valid\n", intTest);
+		state = false;
 	}
 	else {
 		validInt = (int)intTest;
-		printf("%ld is integer value ", intTest);
+		printf("%ld is integer value\n", intTest);
+		printf("%ld is a valid integer\n", intTest);
 	}
+
+	return state;
+
 }
