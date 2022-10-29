@@ -22,11 +22,12 @@ int main(void)
 
 	printLimits();
 
-	puts("\nEnter an integer");
-	fgets(inputStr, LENGTH, stdin);
+	
 
 	for (unsigned int counter = 1; counter < 6; counter++)
 	{
+		puts("\nEnter an integer");
+		fgets(inputStr, LENGTH, stdin);
 		exploreValidateInt(inputStr);
 
 	}
