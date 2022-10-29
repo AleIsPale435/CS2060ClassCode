@@ -8,7 +8,6 @@ T/Th
 #include <stdbool.h>
 #include <string.h>
 #include <errno.h>
-#include <limits.h>
 #include <float.h>
 #include <ctype.h>
 
@@ -78,8 +77,8 @@ void adminSetUp(char* string, double* distance, double* cost) {
 	bool validCost = false;
 	do {
 		validCost = getValidDouble(raceCost, cost);
-	} while (validCost == false); {
-	}
+	} while (validCost == false); 
+	
 }
 
 bool getValidDouble(char* string, double* value) {
@@ -91,10 +90,10 @@ bool getValidDouble(char* string, double* value) {
 
 
 	if (end == string) {
-		fprintf(stderr, "%s: not a decimal number\n", string);
+		puts("No number was entered");
 	}
 	else if ('\0' != *end) {
-		fprintf(stderr, "%s: extra characters at end of input: %s\n", string, end);
+		puts("Number was not read");
 	}
 
 	else if (tempValue > DBL_MAX || tempValue < DBL_MIN) {
