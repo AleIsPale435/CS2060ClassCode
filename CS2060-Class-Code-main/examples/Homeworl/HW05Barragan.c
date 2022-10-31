@@ -11,9 +11,11 @@ T/Th
 #include <float.h>
 #include <ctype.h>
 
+// Global constants
 #define SIZE 80
 const char* SIZE_LIST[] = { "small", "medium", "large", "xtra-large" };
 
+// Functions
 void fgetsRemoveNewLine(char* string);
 void adminSetUp(char* string, double* distance, double* cost);
 bool getValidDouble(char* string, double* value);
@@ -21,12 +23,13 @@ char getValidChar(char* letter);
 
 int main(void) {
 
-
+	// Task 1 Code:
 	char input[SIZE];
 	char* inputPtr = input;
 	puts("Enter your first and last name (80 Characters Max):");
 	fgetsRemoveNewLine(inputPtr);
 
+	// Task 2 Code:
 	char orgName[SIZE];
 	char* orgNamePtr = orgName;
 	double raceDistance = 0;
@@ -37,6 +40,7 @@ int main(void) {
 	adminSetUp(orgNamePtr, raceDistancePtr, raceCostPtr);
 	printf("%s\t%6.2lf Miles\t$%6.2lf\n", orgNamePtr, raceDistance, raceCost);
 
+	// Task 3 Code:
 	char sizeShirt;
 	char* sizeShirtPtr = &sizeShirt;
 	puts("Select shirt size by entering the character shown (s)mall, (m)edium, (l)arge, (x)tra-large");
@@ -45,7 +49,10 @@ int main(void) {
 
 
 }
-
+/// <summary>
+/// Function takes a string input and if there is a new line 
+/// character entered, it will replace it with the null character
+/// </summary>
 void fgetsRemoveNewLine(char* string) {
 
 
@@ -57,6 +64,11 @@ void fgetsRemoveNewLine(char* string) {
 
 }
 
+/// <summary>
+/// Function takes in a org name, race distace and cost and using
+/// pointers plugs them in to the addresses of the variables and 
+/// pass values by reference
+/// </summary>
 void adminSetUp(char* string, double* distance, double* cost) {
 
 	char raceDistance[SIZE];
@@ -81,6 +93,10 @@ void adminSetUp(char* string, double* distance, double* cost) {
 	
 }
 
+/// <summary>
+/// Function takes in a string, converts it into a number and determines 
+/// whether it is a valid double or not
+/// </summary>
 bool getValidDouble(char* string, double* value) {
 
 	char* end;
@@ -107,6 +123,11 @@ bool getValidDouble(char* string, double* value) {
 	return state;
 }
 
+/// <summary>
+/// Function takes in a character and determines which size shirt is 
+/// selected and if any of the correct characters are entered, it will 
+/// prompt the user to try again until it is valid
+/// </summary>
 char getValidChar(char* letter) {
 
 	bool valid = true;
