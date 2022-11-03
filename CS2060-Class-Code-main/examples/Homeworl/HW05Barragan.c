@@ -2,6 +2,7 @@
 Alejandro Barragan
 CS2060
 T/Th
+This program
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,16 +14,19 @@ T/Th
 
 // Global constants
 #define SIZE 80
-const char* SIZE_LIST[] = { "small", "medium", "large", "xtra-large" };
+
 
 // Functions
 void fgetsRemoveNewLine(char* string);
 void adminSetUp(char* string, double* distance, double* cost);
 bool getValidDouble(char* string, double* value);
-char getValidChar(char* letter);
+char getValidChar(char* sizes);
+
+const char *SIZE_LIST[4] = {"small", "medium", "large", "xtra-large"};
 
 int main(void) {
 
+	/*
 	// Task 1 Code:
 	char input[SIZE];
 	char* inputPtr = input;
@@ -31,21 +35,21 @@ int main(void) {
 
 	// Task 2 Code:
 	char orgName[SIZE];
-	char* orgNamePtr = orgName;
+	char* orgNamePtr = &orgName;
 	double raceDistance = 0;
 	double* raceDistancePtr = &raceDistance;
 	double raceCost = 0;
 	double* raceCostPtr = &raceCost;
 
 	adminSetUp(orgNamePtr, raceDistancePtr, raceCostPtr);
-	printf("%s\t%6.2lf Miles\t$%6.2lf\n", orgNamePtr, raceDistance, raceCost);
-
+	printf("%s\t%6.2lf Miles\t$%6.2lf\n", orgName, raceDistance, raceCost);
+*/
 	// Task 3 Code:
-	char sizeShirt;
-	char* sizeShirtPtr = &sizeShirt;
+	
+	
 	puts("Select shirt size by entering the character shown (s)mall, (m)edium, (l)arge, (x)tra-large");
-	getValidChar(sizeShirtPtr);
-
+	
+	getValidChar(SIZE_LIST);
 
 
 }
@@ -77,20 +81,20 @@ void adminSetUp(char* string, double* distance, double* cost) {
 	puts("Enter org Name:");
 	fgetsRemoveNewLine(string);
 
-	puts("Enter race distance:");
-	fgetsRemoveNewLine(raceDistance);
 	bool validDistance = false;
 	do {
+		puts("Enter race distance:");
+		fgetsRemoveNewLine(raceDistance);
 		validDistance = getValidDouble(raceDistance, distance);
 	} while (validDistance == false);
 
-	puts("Enter race cost:");
-	fgetsRemoveNewLine(raceCost);
 	bool validCost = false;
 	do {
+		puts("Enter race cost:");
+		fgetsRemoveNewLine(raceCost);
 		validCost = getValidDouble(raceCost, cost);
-	} while (validCost == false); 
-	
+	} while (validCost == false);
+
 }
 
 /// <summary>
@@ -106,14 +110,14 @@ bool getValidDouble(char* string, double* value) {
 
 
 	if (end == string) {
-		puts("No number was entered");
+		puts("No number was entered, try again");
 	}
-	else if ('\0' != *end) {
-		puts("Number was not read");
+	else if ('\0' != *end && '\n' != *end) {
+		puts("Number was not read, try again");
 	}
 
 	else if (tempValue > DBL_MAX || tempValue < DBL_MIN) {
-		puts("Value is not in double range");
+		puts("Value is not in double range, try again");
 	}
 	else {
 		*value = tempValue;
@@ -128,33 +132,22 @@ bool getValidDouble(char* string, double* value) {
 /// selected and if any of the correct characters are entered, it will 
 /// prompt the user to try again until it is valid
 /// </summary>
-char getValidChar(char* letter) {
+char getValidChar(char* sizes) {
 
-	bool valid = true;
-	char size;
-	int scan = 0;
+	bool validChar = false;
+	
 	do {
-		scan = scanf("%c", &size);
-		while (getchar() != '\n');
-		if (scan <= 0) {
-			puts("Invalid character try again");
-		}
-		else if (size == 's' || size == 'm' || size == 'l' || size == 'x') {
-			for (size_t i = 0; i < sizeof(SIZE_LIST) / sizeof(SIZE_LIST[0]); i++) {
-				if (tolower(size) == *SIZE_LIST[i]) {
-					*letter = *SIZE_LIST[i];
-					printf("Size selected: %s", SIZE_LIST[i]);
-					return size;
-				}
+		char shirtSize = getchar();
+		for (size_t i = 0; i < 4; i++) {
+			if (tolower(shirtSize) == &sizes) {
+				printf("Shirt size selected: %s", sizes[i]);
+				validChar = true;
+				return shirtSize;
 			}
 		}
-		else {
-			puts("Invalid size try again");
-		}
-
-	} while (valid);
-
-
-
-
+		puts("Invalid try again");
+	}
+	while (validChar == false);
+	
+	
 }
