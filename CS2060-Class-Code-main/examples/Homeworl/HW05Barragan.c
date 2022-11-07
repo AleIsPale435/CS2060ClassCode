@@ -30,10 +30,11 @@ int main(void) {
 
 	// Task 1 Code:
 	// Input size for buffer declared, along with a pointer and as well the fgets function for my name
-	char input[SIZE];
-	char* inputPtr = input;
+	char name[SIZE];
+	char* namePtr = name;
 	puts("Enter your first and last name (80 Characters Max):");
-	fgetsRemoveNewLine(inputPtr);
+	fgetsRemoveNewLine(namePtr);
+	printf("Name: %s\n", name);
 
 	// Task 2 Code:
 	// Allocates memory for orgName and calls the admin setup function to setup passing the char and the two doubles by reference using pointers
@@ -50,7 +51,7 @@ int main(void) {
 	// Using a pointer to a array of strings, it will take in a valid character, compare it to the constant size list and will repeat prompting the user until a valid value
 	puts("Select shirt size by entering the character shown (s)mall, (m)edium, (l)arge, (x)tra-large");
 	char* sizePtr = SIZE_LIST;
-	getValidChar(sizePtr);
+	char shirtSize = getValidChar(sizePtr);
 
 
 }
@@ -136,7 +137,7 @@ bool getValidDouble(char* string, double* value) {
 char getValidChar(char* sizes[]) {
 
 	bool validChar = false;
-	int size = sizeof(sizes) / 2;
+	int size = sizeof(SIZE_LIST) / sizeof(SIZE_LIST[0]);
 
 	do {
 		char shirtSize = getchar();
