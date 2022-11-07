@@ -31,11 +31,12 @@ int main(void) {
 	char userInput[BUFF];
 	char* userInputPtr = userInput;
 	bool admin = adminSetUp(userInputPtr);
+	struct org org1;
+	struct org* org1Ptr = &org1;
 	if (admin) {
-		struct org org1;
-		struct org* org1Ptr = &org1;
+		
 		setupOrg(org1Ptr);
-		printf("%s\t%d\t$%6.2lf", org1.orgName, org1.raceDistance, org1.raceCost);
+		printf("%s\t%0.0lf miles\t$%0.2lf\t$%0.2lf\t%0.0lf Percent", org1.orgName, org1.raceDistance, org1.raceCost, org1.jerseyCost, org1.charityCost);
 	}
 	else {
 		
@@ -85,6 +86,7 @@ void setupOrg(struct org* org) {
 	char orgDistance[BUFF];
 	char orgRaceCost[BUFF];
 	char jerseyCost[BUFF];
+	char charityPercentage[BUFF];
 	double distanceMax = 100;
 	double distanceMin = 1;
 	double rideCostMax = 250;
@@ -104,20 +106,29 @@ void setupOrg(struct org* org) {
 		validDistance = validNumericData(orgDistance, &org->raceDistance, distanceMax, distanceMin);
 	} while (validDistance == false);
 
-	printf("Enter the registration cost of the bike ride for %s", org->orgName);
+	printf("Enter the registration cost of the bike ride for %s\n", org->orgName);
 	bool validCost = false;
 	do {
 		fgetsRemoveNewLine(orgRaceCost);
 		validCost = validNumericData(orgRaceCost, &org->raceCost, rideCostMax, rideCostMin);
 	} while (validCost == false);
+	printf("The bike race cost is $%0.0lf\n", org->raceCost);
 
-	puts("Enter sales price of jersey for %s", org->orgName);
+	printf("Enter sales price of jersey for %s\n", org->orgName);
 	bool validJerseyCost = false;
 	do {
 		fgetsRemoveNewLine(jerseyCost);
-		validJerseyCost = validNumericData(jerseyCost, &org->jerseyCost);
+		validJerseyCost = validNumericData(jerseyCost, &org->jerseyCost, jerseyCostMax, jerseyCostMin);
 	} while (validJerseyCost == false);
-	
+	printf("The bike jersey cost is $%0.0lf\n", org->jerseyCost);
+
+	printf("Enter percentage of the bike race sales that will be donated to %s\n", org->orgName);
+	bool validCharityPercentage = false;
+	do {
+		fgetsRemoveNewLine(charityPercentage);
+		validCharityPercentage = validNumericData(charityPercentage, &org->charityCost, charityPercentMax, charityPercentMin);
+	} while (validCharityPercentage == false);
+	printf("The bike jersey cost is %0.0lf percent\n", org->charityCost);
 }
 
 bool validNumericData(char *string, double* value, double max, double min) {
@@ -140,7 +151,7 @@ bool validNumericData(char *string, double* value, double max, double min) {
 	}
 
 	if (state == false) {
-		printf("Error: Enter a value from 1 to 200");
+		printf("Error: Enter a value from %0.0lf to %0.0lf\n", min, max);
 	}
 	return state;
 }
