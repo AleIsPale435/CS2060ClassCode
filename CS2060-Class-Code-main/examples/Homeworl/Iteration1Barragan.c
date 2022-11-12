@@ -9,9 +9,9 @@
 #define BUFF 80
 
 const char* JERSEY_SIZE[] = { "small", "medium", "large", "xtra-large" };
-const char* ANSWER[] = { "yes", "no"};
+const char* ANSWER[] = { "yes", "no" };
 
-struct org{
+struct org {
 
 	char orgName[BUFF];
 	double raceDistance;
@@ -21,28 +21,83 @@ struct org{
 };
 
 void fgetsRemoveNewLine(char* string);
-bool adminSetUp(char* input);
-void setupOrg(struct org *org);
+bool adminSetUp();
+void setupOrg(struct org* org);
 bool validNumericData(char* string, double* value, double max, double min);
-
+bool bikeRegistrationMode(char* name);
+void displaySummary(struct org* org, int* jerseyCount, int* peopleCount);
+void bikeRegistration(char* jerseySize[], char* answer[], int* jerseys, struct org* org, double *totalCostPtr, bool* jersey);
+char getValidChar(char* arrayPtr[], size_t size);
+bool enterCreditCard(char *card);
+bool getReciept(char* arrayPtr[], size_t size, struct org* org, bool jersey);
 
 int main(void) {
 
-	char userInput[BUFF];
-	char* userInputPtr = userInput;
-	bool admin = adminSetUp(userInputPtr);
+
+	puts("Enter admin pin to set up race information");
+	bool admin = adminSetUp();
 	struct org org1;
 	struct org* org1Ptr = &org1;
 	if (admin) {
-		
+
+		puts("Set up the funraising information for the organization");
 		setupOrg(org1Ptr);
-		printf("%s\t%0.0lf miles\t$%0.2lf\t$%0.2lf\t%0.0lf Percent", org1.orgName, org1.raceDistance, org1.raceCost, org1.jerseyCost, org1.charityCost);
+		printf("You can register for one of the following races and %0.0lf%c will be raised for %s\n", org1.charityCost, '%', org1.orgName);
+		puts("Ride #1\tDistance\tCost");
+		printf("%s\t%0.0lf miles\t$%0.2lf\n", org1.orgName, org1.raceDistance, org1.raceCost);
+
+		bool registration;
+		int numRegistrants = 0;
+		int numJerseys = 0;
+		int* numRegistrantsPtr = &numRegistrants;
+		int* numJerseysPtr = &numJerseys;
+		double totalCost = 0;
+		double* totalCostPtr = &totalCost;
+		bool jersey;
+		bool* jerseyPtr = &jersey;
+
+		do {
+			puts("Enter first and last name to register");
+			char name[BUFF];
+			char* namePtr = name;
+			registration = bikeRegistrationMode(namePtr);
+			if (registration == false) {
+				admin = adminSetUp();
+				if (admin == true) {
+					displaySummary(org1Ptr, numJerseysPtr, numRegistrantsPtr);
+				}
+				else {
+					registration = true;
+				}
+			}
+			else {
+
+				bikeRegistration(JERSEY_SIZE, ANSWER, numJerseysPtr, org1Ptr, totalCostPtr, jerseyPtr);
+				size_t answerArraySize = sizeof(ANSWER) / sizeof(ANSWER[0]);
+				bool cardValid;
+				char card[BUFF];
+				do {
+					puts("Enter your credit card");
+					fgetsRemoveNewLine(card);
+					cardValid = enterCreditCard(card);
+				} while (cardValid == false);
+				bool reciept = getReciept(ANSWER, answerArraySize, org1Ptr, jerseyPtr);
+				numRegistrants++;
+				printf("Thank you %s for your purchase", name);
+			}
+
+		} while (registration == true);
+
+
+
 	}
 	else {
-		
+		puts("Exiting admin set-up");
 	}
 
+	
 }
+
 
 void fgetsRemoveNewLine(char* string) {
 
@@ -53,32 +108,35 @@ void fgetsRemoveNewLine(char* string) {
 	}
 }
 
-bool adminSetUp(char* input) {
+bool adminSetUp() {
+
+	char input[BUFF];
 	int failedAttempt = 0;
 	bool status = false;
 	int counter = 3;
 	char adminPassword[] = { "B!k34u" };
-	puts("Enter admin pin to set up race information");
+
 
 	do {
 		puts("Enter admin password:");
 		fgetsRemoveNewLine(input);
 		int result = strcmp(input, adminPassword);
-		if (result < 0 || result > 0) {
+		if (result == 0) {
+			status = true;
+			return status;
+		}
+		else {
 			failedAttempt++;
 			printf("You have %d attempts\n", --counter);
 			if (failedAttempt == 3) {
-				puts("Exiting admin set-up");
+
 				return status;
 			}
 		}
-		else {
-			status = true;
-			puts("Set up the funraising information for the organization");
-			return status;
-		}
 
 	} while (failedAttempt);
+
+	return status;
 }
 
 void setupOrg(struct org* org) {
@@ -131,7 +189,7 @@ void setupOrg(struct org* org) {
 	printf("The bike jersey cost is %0.0lf percent\n", org->charityCost);
 }
 
-bool validNumericData(char *string, double* value, double max, double min) {
+bool validNumericData(char* string, double* value, double max, double min) {
 	char* end;
 	double tempValue = strtod(string, &end);
 	errno = 0;
@@ -146,7 +204,7 @@ bool validNumericData(char *string, double* value, double max, double min) {
 		puts("Number out of range, try again");
 	}
 	else {
-		 *value = tempValue;
+		*value = tempValue;
 		state = true;
 	}
 
@@ -156,4 +214,136 @@ bool validNumericData(char *string, double* value, double max, double min) {
 	return state;
 }
 
+bool bikeRegistrationMode(char* name) {
 
+	bool status = true;
+	char quit[] = { "QUIT" };
+	char input[BUFF];
+	fgetsRemoveNewLine(input);
+	strcpy(name, input);
+	if (strcmp(input, quit) == 0) {
+		status = false;
+	}
+	return status;
+}
+
+void displaySummary(struct org* org, int* jerseyCount, int* peopleCount) {
+
+
+
+}
+
+void bikeRegistration(char* jerseySize[], char* answer[], int* jerseys, struct org* org, double *totalCostPtr, bool* jersey) {
+
+	static int jerseyCount = 0;
+	size_t jerseyArraySize = sizeof(JERSEY_SIZE) / sizeof(JERSEY_SIZE[0]);
+	size_t answerArraySize = sizeof(ANSWER) / sizeof(ANSWER[0]);
+	double totalCost = org->raceCost;
+
+	printf("Would you like to purchase a jersey for $%0.2lf?\n", org->jerseyCost);
+	if (getValidChar(answer, answerArraySize) == 'y') {
+
+		puts("Enter size of jersey");
+		bool validJerseySize = false;
+		do {
+			validJerseySize = getValidChar(jerseySize, jerseyArraySize);
+		} while (validJerseySize == false);
+		totalCost += org->jerseyCost;
+		*jerseys = jerseyCount++;
+		*jersey = true;
+	}
+	*totalCostPtr += totalCost;
+	printf("Your total cost is %0.0lf\n", totalCost);
+
+
+}
+
+char getValidChar(char* arrayPtr[], size_t size) {
+
+	char character;
+
+	bool validChar = false;
+	do {
+		character = getchar();
+		for (size_t i = 0; i < size; i++) {
+			if (character == *arrayPtr[i]) {
+				return character;
+			}
+		}
+
+	} while (validChar == false);
+
+}
+
+bool enterCreditCard(char *card) {
+
+	char* token1 = strtok(card, "-");
+	int size = strlen(token1);
+	for (size_t i = 0; i < size; i++) {
+		if (token1[i] <= 'A' || token1[i] >= 'Z' || strlen(token1) != 4) {
+			return false;
+		}
+	}
+	int spacingPattern = 1;
+	int pattern1 = 4;
+	int pattern2 = 5;
+	while (token1 != NULL) {
+		token1 = strtok(NULL, "-");
+		if (token1 == NULL && spacingPattern == 3) {
+			return true;
+		}
+		int length = strlen(token1);
+		if (spacingPattern == 1 && strlen(token1) == pattern1) {
+			for (size_t i = 0; i < length; i++) {
+				if (token1[i] > '9') {
+					return false;
+				}
+			}
+		}
+		else if (spacingPattern == 2 && strlen(token1) == pattern2) {
+			for (size_t i = 0; i < length; i++) {
+				if (token1[i] > '9') {
+					return false;
+				}
+			}
+		}
+		else {
+			return false;
+		}
+		spacingPattern++;
+	}
+	return true;
+}
+
+bool getReciept(char* arrayPtr[], size_t size, struct org* org, bool jersey) {
+
+	puts("Would you like a receipt?");
+	double totalCost = org->raceCost;
+	double charityCost = org->charityCost;
+
+	if (getValidChar(ANSWER, size) == 'y' && jersey == true) {
+
+		totalCost += org->jerseyCost;
+		charityCost = (totalCost * charityCost) / 100;
+		printf("Race\t$%0.2lf\n", org->raceCost);
+		printf("Jersey\t$%0.2lf", org->jerseyCost);
+		printf("Total cost: $%0.2lf", totalCost);
+		printf("Donation to Charity: $%0.2lf", charityCost);
+	}
+
+	else if (getValidChar(ANSWER, size) == 'y' && jersey == false) {
+
+		charityCost = (totalCost * charityCost) / 100;
+		printf("Race\t$%0.2lf\n", org->raceCost);
+		printf("Jersey\t$%0.2lf", org->jerseyCost);
+		printf("Total cost: $%0.2lf", totalCost);
+		printf("Donation to Charity: $%0.2lf", charityCost);
+	}
+
+	else {
+		return false;
+	}
+
+
+	return true;
+}
