@@ -72,20 +72,17 @@ void createPet(Pet **headPtr, char* name, int age) {
 
 		while (currentPtr != NULL && currentPtr->name[0] <= name[0])
 		{
-			
 			previousPtr = currentPtr;
 			currentPtr = currentPtr->nextPtr;
 		}
 
 		if (previousPtr == NULL)
 		{
-			
 			*headPtr = newNodePtr;
 		}
 		
 		else
 		{
-			
 			previousPtr->nextPtr = newNodePtr;
 		}
 
@@ -111,4 +108,45 @@ void printList(Pet* listPtr)
 	{
 		puts("List is empty");
 	}
+}
+
+void deleteNode(Pet** headPtr, char *nameToDelete)
+{ 
+	Pet* previousPtr = NULL;
+	Pet* currentPtr = *headPtr;
+
+	if (*headPtr != NULL)
+	{
+		strcmp((* headPtr)->name, nameToDelete);
+		if ((strcmp((*headPtr)->name, nameToDelete) == 1))
+		{
+			*headPtr = (*headPtr)->nextPtr;
+			free(currentPtr);
+			currentPtr = NULL;
+		}
+		else 
+		{
+			while (currentPtr != NULL && strcmp((*headPtr)->name, nameToDelete) >= 0)
+			{			
+				previousPtr = currentPtr;
+				currentPtr = currentPtr->nextPtr;
+			}
+	
+			if (currentPtr != NULL)
+			{
+				previousPtr->nextPtr = currentPtr->nextPtr;
+				free(currentPtr);
+				currentPtr = NULL;
+			}
+			else
+			{
+				puts("Node to delete not found!");
+			}
+		}
+	}
+	else 
+	{
+		puts("There aren't any pets in the list!");
+	}
+
 }
