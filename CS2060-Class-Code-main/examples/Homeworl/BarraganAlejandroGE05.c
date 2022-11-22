@@ -6,8 +6,6 @@ Guided Exploration 5
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <errno.h>
-#include <float.h>
 #include <ctype.h>
 
 typedef struct Pet {
@@ -19,6 +17,7 @@ typedef struct Pet {
 void fgetsRemoveNewLine(char* string);
 void createPet(struct Pet **headPtr, char *name, int age);
 void printList(Pet* listPtr);
+void deleteNode(Pet** headPtr, char* nameToDelete);
 
 
 
@@ -26,18 +25,23 @@ int main(void) {
 
 	bool status = false;
 	Pet *headPtr = NULL;
+	
+	puts("Would you like to add a pet?");
 	do {
 		char answer = getchar();
+		while ((getchar()) != '\n');
 		if (answer == 'y') {
 			char name[80];
+			puts("Enter name:");
 			fgetsRemoveNewLine(name);
-			int age;
+			int age = 0;
+			puts("Enter age:");
 			scanf("%d", &age);
 			while ((getchar()) != '\n');
 			createPet(&headPtr, name, age);
 		}
 		else if (answer == 'n') {
-
+			printList(headPtr);
 		}
 		else {
 			puts("Invalid letter try again");
@@ -64,7 +68,7 @@ void createPet(Pet **headPtr, char* name, int age) {
 	Pet* newNodePtr = malloc(sizeof(Pet));
 	if (newNodePtr != NULL) {
 		
-		fgetsRemoveNewLine(newNodePtr->name);
+		strcpy(newNodePtr->name, name);
 		newNodePtr->age = age;
 
 		Pet* previousPtr = NULL;
@@ -88,7 +92,12 @@ void createPet(Pet **headPtr, char* name, int age) {
 
 		newNodePtr->nextPtr = currentPtr;
 	}
+
+	else {
+		printf("No memory allocated for node");
+	}
 }
+
 
 void printList(Pet* listPtr)
 {
@@ -126,7 +135,7 @@ void deleteNode(Pet** headPtr, char *nameToDelete)
 		}
 		else 
 		{
-			while (currentPtr != NULL && strcmp((*headPtr)->name, nameToDelete) >= 0)
+			while (currentPtr != NULL && strcmp((*headPtr)->name, nameToDelete) <= 0)
 			{			
 				previousPtr = currentPtr;
 				currentPtr = currentPtr->nextPtr;
