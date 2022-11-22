@@ -15,26 +15,34 @@ typedef struct Pet {
 }Pet;
 
 void fgetsRemoveNewLine(char* string);
-void createPet(struct Pet **headPtr, char *name, int age);
+void createPet(struct Pet** headPtr, char* name, int age);
 void printList(Pet* listPtr);
 void deleteNode(Pet** headPtr, char* nameToDelete);
-
+void freeRemainingPets(Pet** headPtr);
+void writeToFile(Pet* printPtr);
 
 
 int main(void) {
 
 	bool status = false;
-	Pet *headPtr = NULL;
-	
-	puts("Would you like to add a pet?");
+	Pet* headPtr = NULL;
+	char name[80];
+	int age = 0;
+
+	puts("Enter name:");
+	fgetsRemoveNewLine(name);
+	puts("Enter age:");
+	scanf("%d", &age);
+	while ((getchar()) != '\n');
+	createPet(&headPtr, name, age);
+
 	do {
+		puts("Would you like to add a pet? Answer (y)es or (n)o");
 		char answer = getchar();
 		while ((getchar()) != '\n');
 		if (answer == 'y') {
-			char name[80];
 			puts("Enter name:");
 			fgetsRemoveNewLine(name);
-			int age = 0;
 			puts("Enter age:");
 			scanf("%d", &age);
 			while ((getchar()) != '\n');
@@ -42,18 +50,41 @@ int main(void) {
 		}
 		else if (answer == 'n') {
 			printList(headPtr);
+			do {
+				puts("Would you like to remove pet? Answer (y)es or (n)o");
+				char answer2 = getchar();
+				while ((getchar()) != '\n');
+				if (answer2 == 'y') {
+					char nameToRemove[80];
+					puts("Enter pet to remove");
+					fgetsRemoveNewLine(nameToRemove);
+					deleteNode(&headPtr, nameToRemove);
+					printList(headPtr);
+				}
+				else if (answer2 == 'n') {
+					printList(headPtr);
+					writeToFile(headPtr);
+					freeRemainingPets(&headPtr);
+
+					status = true;
+				}
+				else {
+					puts("Invalid letter try again");
+				}
+
+			} while (status == false);
+
 		}
 		else {
 			puts("Invalid letter try again");
 		}
-		
+
 
 
 	} while (status == false);
 }
 
 void fgetsRemoveNewLine(char* string) {
-
 
 	fgets(string, 80, stdin);
 	int lastChar = strlen(string) - 1;
@@ -63,30 +94,27 @@ void fgetsRemoveNewLine(char* string) {
 
 }
 
-void createPet(Pet **headPtr, char* name, int age) {
+void createPet(Pet** headPtr, char* name, int age) {
 
 	Pet* newNodePtr = malloc(sizeof(Pet));
 	if (newNodePtr != NULL) {
-		
+
 		strcpy(newNodePtr->name, name);
 		newNodePtr->age = age;
 
 		Pet* previousPtr = NULL;
 		Pet* currentPtr = *headPtr;
 
-		while (currentPtr != NULL && currentPtr->name[0] <= name[0])
-		{
+		while (currentPtr != NULL && currentPtr->name[0] <= name[0]) {
 			previousPtr = currentPtr;
 			currentPtr = currentPtr->nextPtr;
 		}
 
-		if (previousPtr == NULL)
-		{
+		if (previousPtr == NULL) {
 			*headPtr = newNodePtr;
 		}
-		
-		else
-		{
+
+		else {
 			previousPtr->nextPtr = newNodePtr;
 		}
 
@@ -94,68 +122,92 @@ void createPet(Pet **headPtr, char* name, int age) {
 	}
 
 	else {
-		printf("No memory allocated for node");
+		printf("No memory allocated for pet");
 	}
 }
 
 
 void printList(Pet* listPtr)
 {
-	if (listPtr != NULL)
-	{
-		printf("%s", "The list is: ");
+	if (listPtr != NULL) {
+		puts("List:");
 		Pet* currentPtr = listPtr;
 
-		while (currentPtr != NULL)
-		{
-			printf("%s", currentPtr->name);
-			printf("%d --> ", currentPtr->age);
+		while (currentPtr != NULL) {
+			printf("Name: %s\tAge: %d\n", currentPtr->name, currentPtr->age);
 			currentPtr = currentPtr->nextPtr;
 		}
 	}
-	else
-	{
+	else {
 		puts("List is empty");
 	}
 }
 
-void deleteNode(Pet** headPtr, char *nameToDelete)
-{ 
+void deleteNode(Pet** headPtr, char* nameToDelete)
+{
 	Pet* previousPtr = NULL;
 	Pet* currentPtr = *headPtr;
 
-	if (*headPtr != NULL)
-	{
-		strcmp((* headPtr)->name, nameToDelete);
-		if ((strcmp((*headPtr)->name, nameToDelete) == 1))
-		{
+	if (*headPtr != NULL) {
+
+		if ((strcmp((*headPtr)->name, nameToDelete) == 0)) {
 			*headPtr = (*headPtr)->nextPtr;
 			free(currentPtr);
 			currentPtr = NULL;
 		}
-		else 
-		{
-			while (currentPtr != NULL && strcmp((*headPtr)->name, nameToDelete) <= 0)
-			{			
+		else {
+			while (currentPtr != NULL && strcmp(currentPtr->name, nameToDelete) != 0) {
 				previousPtr = currentPtr;
 				currentPtr = currentPtr->nextPtr;
 			}
-	
-			if (currentPtr != NULL)
-			{
+
+			if (currentPtr != NULL) {
 				previousPtr->nextPtr = currentPtr->nextPtr;
 				free(currentPtr);
 				currentPtr = NULL;
 			}
-			else
-			{
-				puts("Node to delete not found!");
+			else {
+				puts("Pet not found!");
 			}
 		}
 	}
-	else 
-	{
+	else {
 		puts("There aren't any pets in the list!");
 	}
 
+}
+
+void freeRemainingPets(Pet** headPtr)
+{
+	Pet* currentPtr = *headPtr;
+	Pet* nextNodePtr = NULL;
+
+	while (currentPtr != NULL) {
+		nextNodePtr = currentPtr->nextPtr;
+		free(currentPtr);
+		currentPtr = nextNodePtr;
+	}
+
+	*headPtr = NULL;
+	puts("Removing all pets from program");
+}
+
+void writeToFile(Pet* printPtr) {
+	FILE* filePtr = fopen("C:\\Users\\kyerm\\Desktop\\Github2060\\CS2060ClassCode\\CS2060-Class-Code-main\\examples\\Homeworl\\pets.txt", "w");
+	if (filePtr != NULL) {
+		if (printPtr != NULL) {
+			puts("List:");
+			Pet* currentPtr = currentPtr;
+
+			while (currentPtr != NULL) {
+				fprintf("Name: %s\tAge: %d\n", currentPtr->name, currentPtr->age);
+				currentPtr = currentPtr->nextPtr;
+			}
+		}
+		else {
+			puts("List is empty");
+		}
+	}
+
+	fclose(filePtr);
 }
