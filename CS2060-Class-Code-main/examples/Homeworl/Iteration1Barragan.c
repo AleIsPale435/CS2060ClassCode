@@ -25,26 +25,27 @@ until QUIT and the admin password has been entered which will then display the s
 const char* JERSEY_SIZE[] = { "small", "medium", "large", "xtra-large" };
 const char* ANSWER[] = { "yes", "no" };
 
-struct org {
+typedef struct {
 
 	char orgName[BUFF];
 	double raceDistance;
 	double raceCost;
 	double jerseyCost;
 	double charityCost;
-};
+	Organization *nextPtr;
+}Organization;
 
 // Functions
 void fgetsRemoveNewLine(char* string);
 bool adminSetUp();
-void setupOrg(struct org* org);
+void setupOrg(Organization* org);
 bool validNumericData(char* string, double* value, double max, double min);
 bool bikeRegistrationMode(char* name);
-void displaySummary(struct org* org, int* jerseyCount, int* peopleCount);
-void bikeRegistration(char* jerseySize[], char* answer[], int* jerseys, struct org* org, bool* jersey);
+void displaySummary(Organization* org, int* jerseyCount, int* peopleCount);
+void bikeRegistration(char* jerseySize[], char* answer[], int* jerseys, Organization* org, bool* jersey);
 char getValidChar(char* arrayPtr[], size_t size);
 bool enterCreditCard(char *card);
-void getReciept(char* arrayPtr[], size_t size, struct org* org, bool jersey);
+void getReciept(char* arrayPtr[], size_t size, Organization* org, bool* jersey);
 
 int main(void) {
 
@@ -52,14 +53,15 @@ int main(void) {
 	// then the rest of the code will execute, otherwise it will shut down the program.
 	puts("Enter admin pin to set up race information");
 	bool admin = adminSetUp();
-	struct org org1;
-	struct org* org1Ptr = &org1;
+	Organization *headPtr = NULL;
+	Organization org1;
+	Organization* org1Ptr = &org1;
 	if (admin) {
 
 		// This part sets up the organization by making the name and the other data types inside of the structure
 		// then it displays all of the information about the structure
 		puts("Set up the funraising information for the organization");
-		setupOrg(org1Ptr);
+		setupOrg(headPtr);
 		printf("You can register for one of the following races and %0.0lf%c will be raised for %s\n", org1.charityCost, '%', org1.orgName);
 		puts("Ride #1\tDistance\tCost");
 		printf("%s\t%0.0lf miles\t$%0.2lf\n", org1.orgName, org1.raceDistance, org1.raceCost);
@@ -176,7 +178,7 @@ bool adminSetUp() {
 /// stored inside of it. The org has a name, race cost, race distance, charity percentage, and a jersey cost. This
 /// function simply fills those data types in using a pointer to the address of those data types.
 /// </summary>
-void setupOrg(struct org* org) {
+void setupOrg(Organization* org) {
 
 	char orgDistance[BUFF];
 	char orgRaceCost[BUFF];
@@ -278,7 +280,7 @@ bool bikeRegistrationMode(char* name) {
 /// along with the amount of jerseys that were bought and calculates and displays the total amount of money 
 /// that was spent including the amount of money raised for the charity of the organization.
 /// </summary>
-void displaySummary(struct org* org, int* jerseyCount, int* peopleCount) {
+void displaySummary(Organization* org, int* jerseyCount, int* peopleCount) {
 
 	printf("Summary of race sales where %c%0.0lf goes to charity\n", '%', org->charityCost);
 	puts("Race\tDistance\tPrice\tRegistrants\tTotal Sales\tCharity Amount");
@@ -302,13 +304,13 @@ void displaySummary(struct org* org, int* jerseyCount, int* peopleCount) {
 /// It also adds the jersey counter pointer to one to calculate the amount of jerseys that are bought. Static variable is 
 /// used to keep track of it. If the user selects n or no then it will only show the total cost without the jersey.
 /// </summary>
-void bikeRegistration(char* jerseySize[], char* answer[], int* jerseys, struct org* org, bool* jersey) {
+void bikeRegistration(char* jerseySize[], char* answer[], int* jerseys, Organization* org, bool* jersey) {
 
 	static int jerseyCount = 0;
 	size_t jerseyArraySize = sizeof(JERSEY_SIZE) / sizeof(JERSEY_SIZE[0]);
 	size_t answerArraySize = sizeof(ANSWER) / sizeof(ANSWER[0]);
 	double totalCost = org->raceCost;
-
+	*jersey = false;
 	printf("Would you like to purchase a jersey for $%0.2lf?\n", org->jerseyCost);
 	if (getValidChar(answer, answerArraySize) == 'y') {
 
@@ -401,14 +403,14 @@ bool enterCreditCard(char *card) {
 /// It will print out a receipt for both a purchased jersey or not along with the total. If typed n, then
 /// nothing will be typed
 /// </summary>
-void getReciept(char* arrayPtr[], size_t size, struct org* org, bool jersey) {
+void getReciept(char* arrayPtr[], size_t size, Organization* org, bool* jersey) {
 
 	puts("Would you like a receipt?");
 	double totalCost = org->raceCost;
 	double charityCost = org->charityCost;
 	char answer;
 	answer = getValidChar(ANSWER, size);
-	if (answer == 'y' && jersey == true) {
+	if (answer == 'y' && *jersey == true) {
 
 		totalCost += org->jerseyCost;
 		charityCost = (totalCost * charityCost) / 100;
@@ -418,11 +420,10 @@ void getReciept(char* arrayPtr[], size_t size, struct org* org, bool jersey) {
 		printf("Donation to Charity: $%0.2lf\n", charityCost);
 	}
 
-	else if (answer == 'y' && jersey == false) {
+	else if (answer == 'y' && *jersey == false) {
 
 		charityCost = (totalCost * charityCost) / 100;
 		printf("Race\t$%0.2lf\n", org->raceCost);
-		printf("Jersey\t$%0.2lf\n", org->jerseyCost);
 		printf("Total cost: $%0.2lf\n", totalCost);
 		printf("Donation to Charity: $%0.2lf\n", charityCost);
 	}
