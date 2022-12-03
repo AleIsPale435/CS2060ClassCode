@@ -46,7 +46,7 @@ void setupOrg(Organization* org);
 void createOrganization(Organization** headPtr);
 bool validNumericData(char* string, double* value, double max, double min);
 bool bikeRegistrationMode(char* name);
-void displaySummary(Organization* org);
+void displaySummary(Organization** org);
 void bikeRegistration(char* jerseySize[], char* answer[], size_t jerseyLength, size_t answerLength, Organization* org, bool* jersey);
 char getValidChar(char* arrayPtr[], size_t size);
 bool enterCreditCard(char* card);
@@ -97,7 +97,7 @@ int main(void) {
 			if (registration == false) {
 				admin = adminSetUp();
 				if (admin == true) {
-					displaySummary(headPtr);
+					displaySummary(&headPtr);
 				}
 				else {
 					registration = true;
@@ -282,7 +282,7 @@ bool validNumericData(char* string, double* value, double max, double min) {
 	else if ('\0' != *end) {
 		puts("Number was not read, try again");
 	}
-	else if (tempValue > max || tempValue < min) {
+	else if (tempValue > max || tempValue < min && errno == 0) {
 		puts("Number out of range, try again");
 	}
 	else {
@@ -317,9 +317,32 @@ bool bikeRegistrationMode(char* name) {
 /// along with the amount of jerseys that were bought and calculates and displays the total amount of money 
 /// that was spent including the amount of money raised for the charity of the organization.
 /// </summary>
-void displaySummary(Organization* org) {
+void displaySummary(Organization** org) {
 
+	Organization* current = *org;
+	Organization* nextNode = NULL;
+	while (current != NULL) {
+		printf("Organization: %s\n", current->orgName);
+		printf("Distance: %0.0lf miles", current->raceDistance);
+		printf("Race Cost: $%0.2lf", current->raceCost);
+		printf("Registrants: %d", current->numParticipants);
+		double raceSales = current->numParticipants * current->raceCost;
+		printf("Total Race Sales: $%0.2lf", raceSales);
+		printf("Jersey Cost: $%0.2lf", current->jerseyCost);
+		printf("Jerseys Sold: %d", current->jerseys);
+		double jerseySales = current->jerseys * current->jerseyCost;
+		printf("Total Jersey Sales: $%0.2lf", jerseySales);
+		double totalSales = jerseySales + raceSales;
+		printf("Total Sales: $%0.2lf", totalSales);
+		printf("Charity Percent: %c%0.0lf", '%', current->charityCost);
+		double charitySales = (totalSales * current->charityCost) / 100;
+		printf("Charity Amount: %0.2lf", charitySales);
+		nextNode = current->nextPtr;
+		free(current);
+		current = nextNode;
+	}
 
+	*org = NULL;
 
 }
 /// <summary>
@@ -344,6 +367,7 @@ void bikeRegistration(char* jerseySize[], char* answer[], size_t jerseyLength, s
 		} while (validJerseySize == false);
 		cost += org->jerseyCost;
 		org->jerseys = org->jerseys + 1;
+		*jersey = true;
 
 	}
 	printf("Your total cost is $%0.2lf\n", cost);
@@ -486,7 +510,6 @@ void printList(Organization* listPtr)
 }
 
 Organization* findOrg(Organization* headPtr) {
-
 
 	bool found = false;
 	do {
