@@ -1,15 +1,15 @@
 /*
 Alejandro Barragan
 Project Iteration 1
-This program performs several tasks. It prompts the user for the admin password to begin the bike 
-registration, if it is not entered correctly three times, the program will exit. Once done it then 
-prompts for the organization name, race distance, race cost, jersey cost, and the percent amount 
+This program performs several tasks. It prompts the user for the admin password to begin the bike
+registration, if it is not entered correctly three times, the program will exit. Once done it then
+prompts for the organization name, race distance, race cost, jersey cost, and the percent amount
 going to charity. Each with a different range of numbers that it requires. Once done, it then prompts
 the user for registration names but if QUIT is entered, it will require to enter the admin password
-to quit registration mode and print out the total sales for the race. Otherwise, name is entered, it 
-will prompt the user to either buy or not buy a jersey, followed by the size of the jerseythen will 
-prompt for card information following a pattern that is 4 uppercase letters, 4 numbers, and then 5 
-numbers each seperated with a dash. Then it will ask if a receipt wants to be printed out then repeat 
+to quit registration mode and print out the total sales for the race. Otherwise, name is entered, it
+will prompt the user to either buy or not buy a jersey, followed by the size of the jerseythen will
+prompt for card information following a pattern that is 4 uppercase letters, 4 numbers, and then 5
+numbers each seperated with a dash. Then it will ask if a receipt wants to be printed out then repeat
 until QUIT and the admin password has been entered which will then display the summary of sales.
 */
 #include <stdio.h>
@@ -24,28 +24,35 @@ until QUIT and the admin password has been entered which will then display the s
 #define BUFF 80
 const char* JERSEY_SIZE[] = { "small", "medium", "large", "xtra-large" };
 const char* ANSWER[] = { "yes", "no" };
+const size_t JERSEY_ARRAY_SIZE = sizeof(JERSEY_SIZE) / sizeof(JERSEY_SIZE[0]);
+const size_t ANSWER_ARRAY_SIZE = sizeof(ANSWER) / sizeof(ANSWER[0]);
 
-typedef struct {
+typedef struct Organization {
 
 	char orgName[BUFF];
 	double raceDistance;
 	double raceCost;
 	double jerseyCost;
 	double charityCost;
-	Organization *nextPtr;
+	unsigned int numParticipants;
+	unsigned int jerseys;
+	struct Organization* nextPtr;
 }Organization;
 
 // Functions
 void fgetsRemoveNewLine(char* string);
 bool adminSetUp();
 void setupOrg(Organization* org);
+void createOrganization(Organization** headPtr);
 bool validNumericData(char* string, double* value, double max, double min);
 bool bikeRegistrationMode(char* name);
-void displaySummary(Organization* org, int* jerseyCount, int* peopleCount);
-void bikeRegistration(char* jerseySize[], char* answer[], int* jerseys, Organization* org, bool* jersey);
+void displaySummary(Organization* org);
+void bikeRegistration(char* jerseySize[], char* answer[], size_t jerseyLength, size_t answerLength, Organization* org, bool* jersey);
 char getValidChar(char* arrayPtr[], size_t size);
-bool enterCreditCard(char *card);
+bool enterCreditCard(char* card);
 void getReciept(char* arrayPtr[], size_t size, Organization* org, bool* jersey);
+void printList(Organization* listPtr);
+Organization* findOrg(Organization* headPtr);
 
 int main(void) {
 
@@ -53,41 +60,44 @@ int main(void) {
 	// then the rest of the code will execute, otherwise it will shut down the program.
 	puts("Enter admin pin to set up race information");
 	bool admin = adminSetUp();
-	Organization *headPtr = NULL;
-	Organization org1;
-	Organization* org1Ptr = &org1;
+	Organization* headPtr = NULL;
 	if (admin) {
 
 		// This part sets up the organization by making the name and the other data types inside of the structure
 		// then it displays all of the information about the structure
-		puts("Set up the funraising information for the organization");
-		setupOrg(headPtr);
-		printf("You can register for one of the following races and %0.0lf%c will be raised for %s\n", org1.charityCost, '%', org1.orgName);
-		puts("Ride #1\tDistance\tCost");
-		printf("%s\t%0.0lf miles\t$%0.2lf\n", org1.orgName, org1.raceDistance, org1.raceCost);
+		puts("Set up the fundraising information for the organization");
+		createOrganization(&headPtr);
+		bool anotherOrg = true;
 
+		while (anotherOrg == true) {
+			puts("Would you like to add another organization?");
+			char temp = getValidChar(ANSWER, ANSWER_ARRAY_SIZE);
+			if (temp == 'y') {
+				createOrganization(&headPtr);
+			}
+			else {
+				anotherOrg = false;
+			}
+		}
+
+		puts("You can register for one of the following bike races and a percentage will be raised for that organization.");
+		printList(headPtr);
 		// Values for later
 		bool registration;
-		int numRegistrants = 0;
-		int numJerseys = 0;
-		int* numRegistrantsPtr = &numRegistrants;
-		int* numJerseysPtr = &numJerseys;
-		bool jersey;
-		bool* jerseyPtr = &jersey;
-
 		do {
+			puts("Enter the name of the organization you want to register");
+			Organization* orgSelected = findOrg(headPtr);
 			// This is the bike registration mode, unless quit in all capitals is entered, it will simply take in 
 			// the name and continue to register. Otherwise if QUIT is entered, the admin password will be needed
 			// to exit out and display the summary which shows the total cost of all the registrants and jerseys bought. 
 			// But if failed it will simply go back to bike registration mode
 			puts("Enter first and last name to register");
 			char name[BUFF];
-			char* namePtr = name;
-			registration = bikeRegistrationMode(namePtr);
+			registration = bikeRegistrationMode(name);
 			if (registration == false) {
 				admin = adminSetUp();
 				if (admin == true) {
-					displaySummary(org1Ptr, numJerseysPtr, numRegistrantsPtr);
+					displaySummary(headPtr);
 				}
 				else {
 					registration = true;
@@ -98,8 +108,8 @@ int main(void) {
 				// will be selected then the credit card information will be prompted to be entered. Keep
 				// prompting until it is valid. Once done, it will ask for a receipt then will keep looping
 				// until QUIT is entered then the admin password
-				bikeRegistration(JERSEY_SIZE, ANSWER, numJerseysPtr, org1Ptr, jerseyPtr);
-				size_t answerArraySize = sizeof(ANSWER) / sizeof(ANSWER[0]);
+				bool jerseyBought = false;
+				bikeRegistration(JERSEY_SIZE, ANSWER, JERSEY_ARRAY_SIZE, ANSWER_ARRAY_SIZE, orgSelected, &jerseyBought);
 				bool cardValid;
 				char card[BUFF];
 				do {
@@ -108,21 +118,15 @@ int main(void) {
 					fgetsRemoveNewLine(card);
 					cardValid = enterCreditCard(card);
 				} while (cardValid == false);
-				getReciept(ANSWER, answerArraySize, org1Ptr, jerseyPtr);
-				numRegistrants++;
+				getReciept(ANSWER, ANSWER_ARRAY_SIZE, orgSelected, &jerseyBought);
 				printf("Thank you %s for your purchase\n", name);
 			}
 
 		} while (registration == true);
-
-
-
 	}
 	else {
 		puts("Exiting admin set-up");
 	}
-
-	
 }
 
 /// <summary>
@@ -226,6 +230,39 @@ void setupOrg(Organization* org) {
 		validCharityPercentage = validNumericData(charityPercentage, &org->charityCost, charityPercentMax, charityPercentMin);
 	} while (validCharityPercentage == false);
 	printf("The bike jersey cost is %0.0lf percent\n", org->charityCost);
+
+
+}
+
+void createOrganization(Organization** headPtr) {
+
+	Organization* newNodePtr = malloc(sizeof(Organization));
+	if (newNodePtr != NULL) {
+
+		setupOrg(newNodePtr);
+
+		Organization* previousPtr = NULL;
+		Organization* currentPtr = *headPtr;
+
+		while (currentPtr != NULL && stringCompareIgnoreCase(currentPtr->orgName, newNodePtr->orgName) < 0) {
+			previousPtr = currentPtr;
+			currentPtr = currentPtr->nextPtr;
+		}
+
+		if (previousPtr == NULL) {
+			*headPtr = newNodePtr;
+		}
+
+		else {
+			previousPtr->nextPtr = newNodePtr;
+		}
+
+		newNodePtr->nextPtr = currentPtr;
+	}
+
+	else {
+		printf("No memory allocated for pet");
+	}
 }
 /// <summary>
 /// This function takes in a user input, converts it to a double using string to double function, then goes
@@ -280,21 +317,9 @@ bool bikeRegistrationMode(char* name) {
 /// along with the amount of jerseys that were bought and calculates and displays the total amount of money 
 /// that was spent including the amount of money raised for the charity of the organization.
 /// </summary>
-void displaySummary(Organization* org, int* jerseyCount, int* peopleCount) {
+void displaySummary(Organization* org) {
 
-	printf("Summary of race sales where %c%0.0lf goes to charity\n", '%', org->charityCost);
-	puts("Race\tDistance\tPrice\tRegistrants\tTotal Sales\tCharity Amount");
-	double totalRegistrants = org->raceCost * *peopleCount;
-	double charityRegistrants = (totalRegistrants * org->charityCost) / 100;
-	double jerseySales = *jerseyCount * org->jerseyCost;
-	double charityJerseySales = (jerseySales * org->charityCost) / 100;
-	double totalSales = jerseySales + totalRegistrants;
-	double totalCharitySales = (totalSales * org->charityCost) / 100;
-	printf("#1\t%0.0lf miles\t$%0.2lf\t%d\t\t$%0.2lf\t\t$%0.2lf\n", org->raceDistance, org->raceCost, *peopleCount, totalRegistrants, charityRegistrants);
-	puts("Shirts Sold\tSales\tCharity");
-	printf("%d\t\t$%0.0lf\t$%0.2lf\n", *jerseyCount, jerseySales, charityJerseySales);
-	printf("Total Sales:\t$%0.2lf\n", totalSales);
-	printf("Total funds raised for Charity:\t$%0.2lf\n", totalCharitySales);
+
 
 }
 /// <summary>
@@ -304,27 +329,24 @@ void displaySummary(Organization* org, int* jerseyCount, int* peopleCount) {
 /// It also adds the jersey counter pointer to one to calculate the amount of jerseys that are bought. Static variable is 
 /// used to keep track of it. If the user selects n or no then it will only show the total cost without the jersey.
 /// </summary>
-void bikeRegistration(char* jerseySize[], char* answer[], int* jerseys, Organization* org, bool* jersey) {
+void bikeRegistration(char* jerseySize[], char* answer[], size_t jerseyLength, size_t answerLength, Organization* org, bool* jersey) {
 
-	static int jerseyCount = 0;
-	size_t jerseyArraySize = sizeof(JERSEY_SIZE) / sizeof(JERSEY_SIZE[0]);
-	size_t answerArraySize = sizeof(ANSWER) / sizeof(ANSWER[0]);
-	double totalCost = org->raceCost;
-	*jersey = false;
+
+	double cost = org->raceCost;
+	org->numParticipants = org->numParticipants + 1;
 	printf("Would you like to purchase a jersey for $%0.2lf?\n", org->jerseyCost);
-	if (getValidChar(answer, answerArraySize) == 'y') {
+	if (getValidChar(ANSWER, ANSWER_ARRAY_SIZE) == 'y') {
 
 		puts("Enter size of jersey\n(s)mall (m)edium (l)arge (x)tra-large");
 		bool validJerseySize = false;
 		do {
-			validJerseySize = getValidChar(jerseySize, jerseyArraySize);
+			validJerseySize = getValidChar(jerseySize, JERSEY_ARRAY_SIZE);
 		} while (validJerseySize == false);
-		totalCost += org->jerseyCost;
-		jerseyCount++;
-		*jerseys = jerseyCount;
-		*jersey = true;
+		cost += org->jerseyCost;
+		org->jerseys = org->jerseys + 1;
+
 	}
-	printf("Your total cost is $%0.0lf\n", totalCost);
+	printf("Your total cost is $%0.2lf\n", cost);
 
 
 }
@@ -359,7 +381,7 @@ char getValidChar(char* arrayPtr[], size_t size) {
 /// the information is correct, otherwise it will keep prompting the user to enter the card information
 /// in the right order.
 /// </summary>
-bool enterCreditCard(char *card) {
+bool enterCreditCard(char* card) {
 
 	char* token1 = strtok(card, "-");
 	int size = strlen(token1);
@@ -427,5 +449,57 @@ void getReciept(char* arrayPtr[], size_t size, Organization* org, bool* jersey) 
 		printf("Total cost: $%0.2lf\n", totalCost);
 		printf("Donation to Charity: $%0.2lf\n", charityCost);
 	}
+
+}
+
+int stringCompareIgnoreCase(char* string1, char* string2) {
+
+	char string1Copy[BUFF];
+	strcpy(string1Copy, string1);
+	char string2Copy[BUFF];
+	strcpy(string2Copy, string2);
+	for (size_t i = 0; i < strlen(string1Copy); i++) {
+		string1Copy[i] = tolower(string1Copy[i]);
+	}
+	for (size_t i = 0; i < strlen(string2); i++) {
+		string2Copy[i] = tolower(string2Copy[i]);
+	}
+
+	return strcmp(string1Copy, string2Copy);
+}
+
+void printList(Organization* listPtr)
+{
+	if (listPtr != NULL) {
+		puts("List:");
+		Organization* currentPtr = listPtr;
+		puts("Organization\t\tDistance\t\tCost\t\tPercentage");
+		while (currentPtr != NULL) {
+
+			printf("%s\t\t%0.0lf miles\t\t\t%0.2lf\t\t%c%0.0lf\n", currentPtr->orgName, currentPtr->raceDistance, currentPtr->raceCost, '%', currentPtr->charityCost);
+			currentPtr = currentPtr->nextPtr;
+		}
+	}
+	else {
+		puts("List is empty");
+	}
+}
+
+Organization* findOrg(Organization* headPtr) {
+
+
+	bool found = false;
+	do {
+		char finder[BUFF];
+		fgetsRemoveNewLine(finder);
+		Organization* currentPtr = headPtr;
+		while (currentPtr != NULL) {
+			if (strcmp(finder, currentPtr->orgName) == 0) {
+				return currentPtr;
+			}
+			currentPtr = currentPtr->nextPtr;
+		}
+		puts("Organization not found try again");
+	} while (found == false);
 
 }
