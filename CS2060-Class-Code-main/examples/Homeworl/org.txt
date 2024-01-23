@@ -1,0 +1,11 @@
+Organization: Boulder
+Distance: 100 miles
+Race Cost: $50.00
+Registrants: 2
+Total Race Sales: $100.00
+Jersey Cost: $100.00
+Jerseys Sold: 1
+Total Jersey Sales: $100.00
+Total Sales: $200.00
+Charity Percent: %10
+Charity Amount: 20.00

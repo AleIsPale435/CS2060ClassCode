@@ -20,13 +20,14 @@ until QUIT and the admin password has been entered which will then display the s
 #include <float.h>
 #include <ctype.h>
 
-// Constants and the buffer size for user input
+// Constants and the buffer size for user input also added the sizes of the arrays
 #define BUFF 80
 const char* JERSEY_SIZE[] = { "small", "medium", "large", "xtra-large" };
 const char* ANSWER[] = { "yes", "no" };
 const size_t JERSEY_ARRAY_SIZE = sizeof(JERSEY_SIZE) / sizeof(JERSEY_SIZE[0]);
 const size_t ANSWER_ARRAY_SIZE = sizeof(ANSWER) / sizeof(ANSWER[0]);
 
+// Organization added number of participants and jerseys sold
 typedef struct Organization {
 
 	char orgName[BUFF];
@@ -53,6 +54,7 @@ bool enterCreditCard(char* card);
 void getReciept(char* arrayPtr[], size_t size, Organization* org, bool* jersey);
 void printList(Organization* listPtr);
 Organization* findOrg(Organization* headPtr);
+void writeToFile(Organization* head);
 
 int main(void) {
 
@@ -63,8 +65,8 @@ int main(void) {
 	Organization* headPtr = NULL;
 	if (admin) {
 
-		// This part sets up the organization by making the name and the other data types inside of the structure
-		// then it displays all of the information about the structure
+		// This part calls the create organization the first time and it will ask the user if they want to create 
+		// another organization, if selected yes then the code repeats until no is selected.
 		puts("Set up the fundraising information for the organization");
 		createOrganization(&headPtr);
 		bool anotherOrg = true;
@@ -80,23 +82,29 @@ int main(void) {
 			}
 		}
 
+		// This prints out the organizations in the list
 		puts("You can register for one of the following bike races and a percentage will be raised for that organization.");
 		printList(headPtr);
-		// Values for later
+
+		// Inside of this boolean flag, it will prompt the user to select an organization from the printed list until
+		// one is selected. A pointer will be assigned to that organization to be used to update information later on.
+		// After it is done, it will prompt the user to start registring for that organization that was selected, if QUIT
+		// is entered, it will prompt for the admin set up and will display the summary. After it is done registering, 
+		// it will prompt the user to type in their credit card information which consits of 4 uppercases letters and
+		// 9 total numbers. It is displayed how it should be typed in. After it will ask if the user wants a receipt and
+		// will print one if yes is selected then re loop till it is quit.
 		bool registration;
 		do {
 			puts("Enter the name of the organization you want to register");
 			Organization* orgSelected = findOrg(headPtr);
-			// This is the bike registration mode, unless quit in all capitals is entered, it will simply take in 
-			// the name and continue to register. Otherwise if QUIT is entered, the admin password will be needed
-			// to exit out and display the summary which shows the total cost of all the registrants and jerseys bought. 
-			// But if failed it will simply go back to bike registration mode
+
 			puts("Enter first and last name to register");
 			char name[BUFF];
 			registration = bikeRegistrationMode(name);
 			if (registration == false) {
 				admin = adminSetUp();
 				if (admin == true) {
+					writeToFile(headPtr);
 					displaySummary(&headPtr);
 				}
 				else {
@@ -104,10 +112,6 @@ int main(void) {
 				}
 			}
 			else {
-				// After getting the user name, it will then prompt to ask to buy a jersey, if yes a size
-				// will be selected then the credit card information will be prompted to be entered. Keep
-				// prompting until it is valid. Once done, it will ask for a receipt then will keep looping
-				// until QUIT is entered then the admin password
 				bool jerseyBought = false;
 				bikeRegistration(JERSEY_SIZE, ANSWER, JERSEY_ARRAY_SIZE, ANSWER_ARRAY_SIZE, orgSelected, &jerseyBought);
 				bool cardValid;
@@ -155,7 +159,6 @@ bool adminSetUp() {
 	int counter = 3;
 	char adminPassword[] = { "B!k34u" };
 
-
 	do {
 		puts("Enter admin password:");
 		fgetsRemoveNewLine(input);
@@ -196,6 +199,8 @@ void setupOrg(Organization* org) {
 	double jerseyCostMin = 50;
 	double charityPercentMax = 30;
 	double charityPercentMin = 5;
+	org->numParticipants = 0;
+	org->jerseys = 0;
 
 	puts("Enter funraising organizations name:");
 	fgetsRemoveNewLine(org->orgName);
@@ -233,7 +238,9 @@ void setupOrg(Organization* org) {
 
 
 }
-
+/// <summary>
+///This function allocates memory for a new organization node and will place it in the list in alphabetical order
+/// </summary>
 void createOrganization(Organization** headPtr) {
 
 	Organization* newNodePtr = malloc(sizeof(Organization));
@@ -261,7 +268,7 @@ void createOrganization(Organization** headPtr) {
 	}
 
 	else {
-		printf("No memory allocated for pet");
+		printf("No memory allocated for organization");
 	}
 }
 /// <summary>
@@ -315,7 +322,8 @@ bool bikeRegistrationMode(char* name) {
 /// <summary>
 /// This simple function just takes in the org pointer and the number of people that registered for the race
 /// along with the amount of jerseys that were bought and calculates and displays the total amount of money 
-/// that was spent including the amount of money raised for the charity of the organization.
+/// that was spent including the amount of money raised for the charity of the organization. It will display
+/// all of the information for all of the organizations in the linked list
 /// </summary>
 void displaySummary(Organization** org) {
 
@@ -323,20 +331,20 @@ void displaySummary(Organization** org) {
 	Organization* nextNode = NULL;
 	while (current != NULL) {
 		printf("Organization: %s\n", current->orgName);
-		printf("Distance: %0.0lf miles", current->raceDistance);
-		printf("Race Cost: $%0.2lf", current->raceCost);
-		printf("Registrants: %d", current->numParticipants);
+		printf("Distance: %0.0lf miles\n", current->raceDistance);
+		printf("Race Cost: $%0.2lf\n", current->raceCost);
+		printf("Registrants: %d\n", current->numParticipants);
 		double raceSales = current->numParticipants * current->raceCost;
-		printf("Total Race Sales: $%0.2lf", raceSales);
-		printf("Jersey Cost: $%0.2lf", current->jerseyCost);
-		printf("Jerseys Sold: %d", current->jerseys);
+		printf("Total Race Sales: $%0.2lf\n", raceSales);
+		printf("Jersey Cost: $%0.2lf\n", current->jerseyCost);
+		printf("Jerseys Sold: %d\n", current->jerseys);
 		double jerseySales = current->jerseys * current->jerseyCost;
-		printf("Total Jersey Sales: $%0.2lf", jerseySales);
+		printf("Total Jersey Sales: $%0.2lf\n", jerseySales);
 		double totalSales = jerseySales + raceSales;
-		printf("Total Sales: $%0.2lf", totalSales);
-		printf("Charity Percent: %c%0.0lf", '%', current->charityCost);
+		printf("Total Sales: $%0.2lf\n", totalSales);
+		printf("Charity Percent: %0.0lf%c\n", '%', current->charityCost);
 		double charitySales = (totalSales * current->charityCost) / 100;
-		printf("Charity Amount: %0.2lf", charitySales);
+		printf("Charity Amount: %0.2lf\n", charitySales);
 		nextNode = current->nextPtr;
 		free(current);
 		current = nextNode;
@@ -476,6 +484,10 @@ void getReciept(char* arrayPtr[], size_t size, Organization* org, bool* jersey) 
 
 }
 
+/// <summary>
+/// This function takes in two strings, converts them into lowercase, and then compares
+/// them to use to sort the linked list above in alphabetical order
+/// </summary>
 int stringCompareIgnoreCase(char* string1, char* string2) {
 
 	char string1Copy[BUFF];
@@ -492,6 +504,9 @@ int stringCompareIgnoreCase(char* string1, char* string2) {
 	return strcmp(string1Copy, string2Copy);
 }
 
+/// <summary>
+/// This function simply prints out all of the organization nodes in the linked list
+/// </summary>
 void printList(Organization* listPtr)
 {
 	if (listPtr != NULL) {
@@ -509,6 +524,10 @@ void printList(Organization* listPtr)
 	}
 }
 
+/// <summary>
+/// This function iterates through the linked list to find the organization that the user selected to register for
+/// and returns the pointer to that organization to register for
+/// </summary>
 Organization* findOrg(Organization* headPtr) {
 
 	bool found = false;
@@ -524,5 +543,38 @@ Organization* findOrg(Organization* headPtr) {
 		}
 		puts("Organization not found try again");
 	} while (found == false);
+
+}
+
+/// <summary>
+/// This function does the same as the display summary only it writes to a file rather than write to the console.
+/// </summary>
+void writeToFile(Organization* head) {
+
+	Organization* current = head;
+
+	while (current != NULL) {
+		FILE* file = fopen("C:\\Users\\kyerm\Desktop\\Github2060\\CS2060ClassCode\\CS2060-Class-Code-main\\examples\\Homeworl\\Org1.txt", "w");
+		if (file != NULL) {
+			fprintf(file, "Organization: %s\n", current->orgName);
+			fprintf(file, "Distance: %0.0lf miles\n", current->raceDistance);
+			fprintf(file, "Race Cost: $%0.2lf\n", current->raceCost);
+			fprintf(file, "Registrants: %d\n", current->numParticipants);
+			double raceSales = current->numParticipants * current->raceCost;
+			fprintf(file, "Total Race Sales: $%0.2lf\n", raceSales);
+			fprintf(file, "Jersey Cost: $%0.2lf\n", current->jerseyCost);
+			fprintf(file, "Jerseys Sold: %d\n", current->jerseys);
+			double jerseySales = current->jerseys * current->jerseyCost;
+			fprintf(file, "Total Jersey Sales: $%0.2lf\n", jerseySales);
+			double totalSales = jerseySales + raceSales;
+			fprintf(file,"Total Sales: $%0.2lf\n", totalSales);
+			fprintf(file, "Charity Percent: %c%0.0lf\n", '%', current->charityCost);
+			double charitySales = (totalSales * current->charityCost) / 100;
+			fprintf(file, "Charity Amount: %0.2lf\n", charitySales);
+			current = current->nextPtr;
+		}
+		fclose(file);
+	}
+	
 
 }
